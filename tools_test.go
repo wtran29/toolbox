@@ -1,6 +1,8 @@
 package toolbox
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestTools_RandomString(t *testing.T) {
 	var testTools Tools
