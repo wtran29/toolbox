@@ -9,11 +9,11 @@ This package was created to limit rewriting functions or repeated code for proje
 ## Features
 - [X] Random string generator of n length
 - [X] Upload file(s) to a specific directory by mime types and file size
-- [] Directory generator for non-existent paths
-- [] URL safe slug generator
-- [] Download static file function
-- [] Read JSON function
-- [] Write JSON function
+- [ ] Directory generator for non-existent paths
+- [ ] URL safe slug generator
+- [ ] Download static file function
+- [ ] Read JSON function
+- [ ] Write JSON function
 
 ## Installation
 
