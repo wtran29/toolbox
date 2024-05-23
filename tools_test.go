@@ -45,11 +45,11 @@ func TestTools_UploadFiles(t *testing.T) {
 			defer wg.Done()
 
 			// create form data field 'file'
-			part, err := writer.CreateFormFile("file", "./testdata/test.png")
+			part, err := writer.CreateFormFile("file", "./testdata/img.png")
 			if err != nil {
 				t.Error(err)
 			}
-			f, err := os.Open("./testdata/test.png")
+			f, err := os.Open("./testdata/img.png")
 			if err != nil {
 				t.Error(err)
 			}
@@ -79,12 +79,36 @@ func TestTools_UploadFiles(t *testing.T) {
 			}
 			// clean up
 			_ = os.Remove(fmt.Sprintf("./testdata/uploads/%s", uploadedFiles[0].NewFileName))
+
 		}
 		if !e.errorExpected && err != nil {
 			t.Errorf("%s: error expected but non received", e.name)
 		}
 		wg.Wait()
 	}
+	cleanDirectory("./testdata/uploads")
+}
+
+func cleanDirectory(path string) error {
+	dir, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer dir.Close()
+
+	files, err := dir.Readdirnames(-1)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		err = os.Remove(fmt.Sprintf("%s/%s", path, file))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func TestTools_UploadAFile(t *testing.T) {
@@ -96,11 +120,11 @@ func TestTools_UploadAFile(t *testing.T) {
 			defer writer.Close()
 
 			// create form data field 'file'
-			part, err := writer.CreateFormFile("file", "./testdata/test.png")
+			part, err := writer.CreateFormFile("file", "./testdata/img.png")
 			if err != nil {
 				t.Error(err)
 			}
-			f, err := os.Open("./testdata/test.png")
+			f, err := os.Open("./testdata/img.png")
 			if err != nil {
 				t.Error(err)
 			}
@@ -129,8 +153,26 @@ func TestTools_UploadAFile(t *testing.T) {
 		if _, err := os.Stat(fmt.Sprintf("./testdata/uploads/%s", uploadedFiles.NewFileName)); os.IsNotExist(err) {
 			t.Errorf("expected file to exist: %s", err.Error())
 		}
+
 		// clean up
 		_ = os.Remove(fmt.Sprintf("./testdata/uploads/%s", uploadedFiles.NewFileName))
 
 	}
+	cleanDirectory("./testdata/uploads")
+}
+
+func TestTools_MakeDirIfNotExists(t *testing.T) {
+	var testTool Tools
+
+	err := testTool.MakeDirIfNotExist("./testdata/myDir")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = testTool.MakeDirIfNotExist("./testdata/myDir")
+	if err != nil {
+		t.Error(err)
+	}
+
+	os.Remove("./testdata/myDir")
 }
