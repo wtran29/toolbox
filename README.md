@@ -9,7 +9,8 @@ This package was created to limit rewriting functions or repeated code for proje
 ## Features
 - [X] Random string generator of n length
 - [X] Upload file(s) to a specific directory by mime types and file size
-- [ ] Directory generator for non-existent paths
+- [X] Directory generator for non-existent paths
+- [X] Clean directory function that will remove all files in a folder
 - [ ] URL safe slug generator
 - [ ] Download static file function
 - [ ] Read JSON function
