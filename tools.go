@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -180,15 +181,34 @@ func (t *Tools) CleanDirectory(path string) error {
 	return nil
 }
 
-// SLugify creates a slug from a string
+// SLugify creates a URL-friendly "slug" fro ma given string.
 func (t *Tools) Slugify(s string) (string, error) {
 	if s == "" {
-		return "", errors.New("empty string not permitted")
+		return "", errors.New("input string cannot be empty")
 	}
-	var re = regexp.MustCompile(`[^a-z\d]+`)
+	// regex expression to match non-alphanumeric characters
+	re := regexp.MustCompile(`[^a-z\d]+`)
+	// convert the string to lowercase and replace non-alphanumeric characters with hyphens
 	slug := strings.Trim(re.ReplaceAllString(strings.ToLower(s), "-"), "-")
 	if len(slug) == 0 {
-		return "", errors.New("Slug is zero length after character removal")
+		return "", errors.New("slug is empty after character removal")
 	}
 	return slug, nil
+}
+
+// DownloadStaticFile handles the download of a file from the server.
+// It sets the appropriate headers to force the browser to download the file
+// instead of displaying it inline. This function allows specifying a custom
+// display name for the downloaded file.
+func (t *Tools) DownloadStaticFile(w http.ResponseWriter, r *http.Request, dir, fileName, displayName string) {
+	fpath := path.Join(dir, fileName)
+
+	if _, err := os.Stat(fpath); os.IsNotExist(err){
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", displayName))
+	w.Header().Set("Content-Type", "application/octet-stream")
+
+	http.ServeFile(w, r, fpath)
 }
