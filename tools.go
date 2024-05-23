@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"math/big"
 	"net/http"
 	"os"
@@ -45,7 +44,6 @@ type UploadedFile struct {
 func (t *Tools) UploadAFile(r *http.Request, uploadDir string, rename ...bool) (*UploadedFile, error) {
 	renameFile := true
 	if len(rename) > 0 {
-		log.Printf("renameFile: %v, rename[0]: %v", renameFile, rename[0])
 		renameFile = rename[0]
 	}
 	files, err := t.UploadFiles(r, uploadDir, renameFile)
@@ -69,7 +67,12 @@ func (t *Tools) UploadFiles(r *http.Request, uploadDir string, rename ...bool) (
 		t.UploadedFile.MaxFileSize = 1024 * 1024 * 1024
 	}
 
-	err := r.ParseMultipartForm(int64(t.UploadedFile.MaxFileSize))
+	err := t.MakeDirIfNotExist(uploadDir)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.ParseMultipartForm(int64(t.UploadedFile.MaxFileSize))
 	if err != nil {
 		return nil, errors.New("uploaded file is too big")
 	}
@@ -138,4 +141,40 @@ func (t *Tools) UploadFiles(r *http.Request, uploadDir string, rename ...bool) (
 		}
 	}
 	return uploadedFiles, nil
+}
+
+// MakeDirIfNotExist creates a directory, and all necessary parents, if it does not exist
+func (t *Tools) MakeDirIfNotExist(path string) error {
+	// Octal representation of file permission
+	const mode = 0755
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		err := os.MkdirAll(path, mode)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CleanDirectory removes all files in a directory. os.RemoveAll is a similar function but
+// removes everything and its path.
+func (t *Tools) CleanDirectory(path string) error {
+	dir, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer dir.Close()
+
+	files, err := dir.Readdirnames(-1)
+	if err != nil {
+		return err
+	}
+
+	for _, f := range files {
+		err = os.Remove(fmt.Sprintf("%s/%s", path, f))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
