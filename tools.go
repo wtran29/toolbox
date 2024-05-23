@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"math/big"
 	"net/http"
 	"os"
@@ -40,7 +41,24 @@ type UploadedFile struct {
 	AllowedFileTypes []string
 }
 
-func (t *Tools) UploadFile(r *http.Request, uploadDir string, rename ...bool) ([]*UploadedFile, error) {
+// UploadAFile is a convenience method that calls UploadFiles, only one file is uploaded
+func (t *Tools) UploadAFile(r *http.Request, uploadDir string, rename ...bool) (*UploadedFile, error) {
+	renameFile := true
+	if len(rename) > 0 {
+		log.Printf("renameFile: %v, rename[0]: %v", renameFile, rename[0])
+		renameFile = rename[0]
+	}
+	files, err := t.UploadFiles(r, uploadDir, renameFile)
+	if err != nil {
+		return nil, err
+	}
+	return files[0], nil
+}
+
+// UploadFiles uploads one or more files to a specific directory and generates a renames each file to a random filename.
+// The function returns a slice of newly named files, the original file names, the file size, max file size of files set to 1 GiB
+// and the allowed file types, and possible error.
+func (t *Tools) UploadFiles(r *http.Request, uploadDir string, rename ...bool) ([]*UploadedFile, error) {
 	renameFile := true
 	if len(rename) > 0 {
 		renameFile = rename[0]
@@ -73,7 +91,6 @@ func (t *Tools) UploadFile(r *http.Request, uploadDir string, rename ...bool) ([
 					return nil, err
 				}
 
-				// TODO: check if file type is permitted
 				allowed := false
 				fileType := http.DetectContentType(buffer)
 
@@ -98,6 +115,8 @@ func (t *Tools) UploadFile(r *http.Request, uploadDir string, rename ...bool) ([
 				} else {
 					uploadedFile.NewFileName = h.Filename
 				}
+
+				uploadedFile.OrigFileName = h.Filename
 				var outFile *os.File
 				defer outFile.Close()
 
