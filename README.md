@@ -12,7 +12,7 @@ This package was created to limit rewriting functions or repeated code for proje
 - [X] Directory generator for non-existent paths
 - [X] Clean directory function that will remove all files in a folder
 - [X] URL safe slug generator
-- [ ] Download static file function
+- [X] Download static file function
 - [ ] Read JSON function
 - [ ] Write JSON function
 
