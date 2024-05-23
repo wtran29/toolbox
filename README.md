@@ -11,7 +11,7 @@ This package was created to limit rewriting functions or repeated code for proje
 - [X] Upload file(s) to a specific directory by mime types and file size
 - [X] Directory generator for non-existent paths
 - [X] Clean directory function that will remove all files in a folder
-- [ ] URL safe slug generator
+- [X] URL safe slug generator
 - [ ] Download static file function
 - [ ] Read JSON function
 - [ ] Write JSON function
