@@ -1,6 +1,7 @@
 package toolbox
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/json"
 	"errors"
@@ -311,4 +312,38 @@ func (t *Tools) ErrorJSON(w http.ResponseWriter, err error, status ...int) error
 	payload.Message = err.Error()
 
 	return t.WriteJSON(w, statusCode, payload)
+}
+
+// PostJSONWithClient sends a JSON-encoded request to a specified URI using an HTTP POST method. 
+// It allows for an optional custom HTTP client and returns the HTTP response, status code, 
+// and an error if any occurred during the process.
+func (t *Tools) PostJSONWithClient(uri string, data interface{}, client ...*http.Client) (*http.Response, int, error) {
+	// Create json
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return nil, 0, err
+	}
+	// check custom http client
+	httpClient := &http.Client{}
+	if len(client) > 0 {
+		httpClient = client[0]
+	}
+	// build request and set header
+	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, 0, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	// call remote uri
+	res, err := httpClient.Do(req)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer func() {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+	}()
+	// send response back
+	return res, res.StatusCode, nil
 }
